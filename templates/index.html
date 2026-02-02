@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Wall</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box; /* 全局盒模型，布局更稳定 */
+        }
+        body {
+            background: #111;
+            padding: 1rem;
+        }
+        .video-wall {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
+            max-width: 1600px;
+            margin: 0 auto; /* 大屏居中，不拥挤 */
+        }
+        .video-card {
+            display: flex; /* 改为flex纵向排列，容纳图片和标题 */
+            flex-direction: column;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            background: #1a1a1a; /* 卡片背景，衬托标题 */
+        }
+        .video-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.6);
+        }
+        .video-card img {
+            width: 100%;
+            height: auto;
+            display: block;
+            object-fit: cover;
+            transition: opacity 0.2s ease;
+            background: #222; /* 加载占位 */
+        }
+        .video-card:hover img {
+            opacity: 0.9;
+        }
+        /* 新增：视频名字样式 */
+        .video-title {
+            color: #fff;
+            font-size: 14px;
+            padding: 8px 10px;
+            white-space: nowrap; /* 禁止文字换行 */
+            overflow: hidden; /* 隐藏超出部分 */
+            text-overflow: ellipsis; /* 超出部分显示省略号 */
+            background: #1a1a1a; /* 标题栏背景，和卡片统一 */
+        }
+        /* 响应式适配：大屏放大，小屏缩小 */
+        @media (min-width: 1024px) {
+            .video-wall {
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+                gap: 16px;
+            }
+            .video-title {
+                font-size: 15px; /* 大屏标题稍大，更清晰 */
+            }
+        }
+        @media (max-width: 480px) {
+            .video-wall {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                gap: 8px;
+            }
+            body {
+                padding: 0.5rem;
+            }
+            .video-title {
+                font-size: 12px; /* 小屏标题缩小，避免拥挤 */
+                padding: 6px 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="video-wall">
+        {% for v in videos %}
+        <a class="video-card" href="/play/{{ v }}" title="播放：{{ v }}">
+            <img src="/covers/{{ v.replace('.mp4', '.jpg') }}" alt="视频{{ v }}封面" loading="lazy">
+            <!-- 新增：视频名字展示，去除.mp4后缀更美观 -->
+            <span class="video-title">{{ v.replace('.mp4', '') }}</span>
+        </a>
+        {% endfor %}
+    </div>
+</body>
+</html>
