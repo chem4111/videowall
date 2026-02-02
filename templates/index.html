@@ -16,8 +16,10 @@
             background: #111;
             padding: 1rem;
             color: #fff;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
-                         Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont,
+                         "Segoe UI", Roboto,
+                         "PingFang SC", "Microsoft YaHei",
+                         sans-serif;
         }
 
         /* ===== 顶部标题 ===== */
@@ -26,18 +28,18 @@
             font-size: 26px;
             font-weight: 600;
             margin-bottom: 20px;
-            color: #ffffff;   /* 白色标题 */
+            color: #ffffff;
         }
 
-        /* ===== 视频墙容器 ===== */
+        /* ===== 视频墙 ===== */
         .video-wall {
             display: grid;
-            gap: 14px;
+            gap: 16px;
             max-width: 1600px;
             margin: 0 auto;
         }
 
-        /* ===== 卡片 ===== */
+        /* ===== 视频卡片 ===== */
         .video-card {
             display: flex;
             flex-direction: column;
@@ -61,22 +63,27 @@
             display: block;
         }
 
-        /* ===== 视频标题 ===== */
+        /* ===== 视频标题（可换行，最多 2 行） ===== */
         .video-title {
             padding: 8px 10px;
             font-size: 14px;
-            color: #ffffff;       /* 明确：白色字体 */
-            white-space: nowrap;
+            color: #ffffff;
+            line-height: 1.4;
+
+            white-space: normal;
             overflow: hidden;
-            text-overflow: ellipsis;
+
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+
             background: #1a1a1a;
         }
 
-        /* ===== 电脑端：一行 4 个 ===== */
+        /* ===== 电脑：一行 4 个 ===== */
         @media (min-width: 1024px) {
             .video-wall {
                 grid-template-columns: repeat(4, 1fr);
-                gap: 18px;
             }
             .video-title {
                 font-size: 15px;
@@ -90,7 +97,7 @@
             }
         }
 
-        /* ===== 手机端：一行 2 个 ===== */
+        /* ===== 手机：一行 2 个 ===== */
         @media (max-width: 599px) {
             body {
                 padding: 0.5rem;
@@ -118,10 +125,12 @@
     <div class="video-wall">
         {% for v in videos %}
         <a class="video-card" href="/play/{{ v }}" title="播放：{{ v }}">
-            <img src="/covers/{{ v.replace('.mp4', '.jpg') }}"
-                 alt="视频 {{ v }} 封面"
+            <img src="/covers/{{ v.rsplit('.', 1)[0] }}.jpg"
+                 alt="视频封面"
                  loading="lazy">
-            <div class="video-title">{{ v.replace('.mp4', '') }}</div>
+            <div class="video-title">
+                {{ v.rsplit('.', 1)[0] }}
+            </div>
         </a>
         {% endfor %}
     </div>
