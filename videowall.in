@@ -1,0 +1,153 @@
+#!/bin/bash
+
+# ===== install.sh 会替换这里 =====
+SCRIPT_DIR="__VIDEOWALL_PROJECT_DIR__"
+
+SERVICE_NAME="videowall"
+SERVICE_FILE="/etc/systemd/system/${SERVICE_NAME}.service"
+
+show_help() {
+    echo "视频墙管理工具"
+    echo ""
+    echo "用法: videowall <命令>"
+    echo ""
+    echo "命令:"
+    echo "  start    启动视频墙应用（前台运行）"
+    echo "  init     初始化视频封面（为所有视频生成封面图）"
+    echo "  enable   创建并启用 systemd 服务（开机自启）"
+    echo "  disable  禁用并删除 systemd 服务"
+    echo "  status   查看视频墙服务状态"
+    echo "  help     显示此帮助信息"
+    echo ""
+    echo "示例:"
+    echo "  videowall start"
+    echo "  videowall init"
+    echo "  sudo videowall enable"
+    echo "  videowall status"
+}
+
+run_python() {
+    if command -v python3 >/dev/null 2>&1; then
+        python3 "$@"
+    elif command -v python >/dev/null 2>&1; then
+        python "$@"
+    elif command -v py >/dev/null 2>&1; then
+        py "$@"
+    else
+        echo "错误: 未找到 Python 解释器"
+        exit 1
+    fi
+}
+
+check_project() {
+    if [ ! -f "$SCRIPT_DIR/app.py" ]; then
+        echo "错误: 未找到 app.py"
+        echo "项目目录无效: $SCRIPT_DIR"
+        exit 1
+    fi
+}
+
+cmd_start() {
+    echo "正在启动视频墙应用..."
+    check_project
+    cd "$SCRIPT_DIR" || exit 1
+    run_python app.py
+}
+
+cmd_init() {
+    echo "正在初始化视频封面..."
+    check_project
+    cd "$SCRIPT_DIR" || exit 1
+
+    if [ ! -f "gen_covers.py" ]; then
+        echo "错误: 未找到 gen_covers.py 文件"
+        exit 1
+    fi
+
+    if ! command -v ffmpeg >/dev/null 2>&1; then
+        echo "错误: 未找到 ffmpeg，请先安装"
+        exit 1
+    fi
+
+    run_python gen_covers.py
+    echo " 视频封面初始化完成"
+}
+
+cmd_enable() {
+    echo "正在创建 systemd 服务..."
+
+    if [ "$EUID" -ne 0 ]; then
+        echo "错误: 此命令需要 sudo 权限"
+        exit 1
+    fi
+
+    cat > "$SERVICE_FILE" <<EOF
+[Unit]
+Description=Video Wall Service
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=$SCRIPT_DIR
+ExecStart=$(which python3) $SCRIPT_DIR/app.py
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+    systemctl daemon-reload
+    systemctl enable "$SERVICE_NAME"
+    systemctl start "$SERVICE_NAME"
+
+    echo " 视频墙服务已启用并启动"
+}
+
+cmd_disable() {
+    echo "正在禁用视频墙服务..."
+
+    if [ "$EUID" -ne 0 ]; then
+        echo "错误: 此命令需要 sudo 权限"
+        exit 1
+    fi
+
+    systemctl stop "$SERVICE_NAME" 2>/dev/null
+    systemctl disable "$SERVICE_NAME" 2>/dev/null
+    rm -f "$SERVICE_FILE"
+    systemctl daemon-reload
+
+    echo " 视频墙服务已禁用并删除"
+}
+
+cmd_status() {
+    systemctl status "$SERVICE_NAME" --no-pager -l
+}
+
+case "${1:-help}" in
+    start)
+        cmd_start
+        ;;
+    init)
+        cmd_init
+        ;;
+    enable)
+        cmd_enable
+        ;;
+    disable)
+        cmd_disable
+        ;;
+    status)
+        cmd_status
+        ;;
+    help|--help|-h)
+        show_help
+        ;;
+    *)
+        echo "错误: 未知命令 '$1'"
+        echo ""
+        show_help
+        exit 1
+        ;;
+esac
+

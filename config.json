@@ -1,4 +1,4 @@
 {
-    "VIDEO_DIR": "/mnt/usb/videos",
-    "COVER_DIR": "/mnt/usb/covers"
+  "VIDEO_DIR": "/mnt/usb/videos",
+  "COVER_DIR": "/mnt/usb/covers"
 }
