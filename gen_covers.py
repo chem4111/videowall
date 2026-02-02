@@ -29,7 +29,7 @@ for name in os.listdir(VIDEO_DIR):
     cmd = [
         "ffmpeg",
         "-y",
-        "-ss", "00:00:10",
+        "-ss", "00:00:20",
         "-i", video_path,
         "-vframes", "1",
         "-q:v", "2",
@@ -38,3 +38,4 @@ for name in os.listdir(VIDEO_DIR):
 
     print("生成封面:", cover_name)
     subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
