@@ -22,7 +22,8 @@ show_help() {
     echo "示例:"
     echo "  videowall start"
     echo "  videowall init"
-    echo "  sudo videowall enable"
+    echo "  videowall enable"
+    echo "  videowall disable"    
     echo "  videowall status"
 }
 
